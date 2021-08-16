@@ -16,7 +16,7 @@ module purge                               # Removes all modules still loaded
 module load rhel7/default-gpu              # REQUIRED - loads the basic environment
 module load cuda/10.2 intel/mkl/2017.4
 
-MODEL=GB-Ctrl
+MODEL=Reddit_90M_genderation_LRx8
 BDIR=/rds/project/wjb31/rds-wjb31-nmt2020/myl40
 MLMI8DIR=/rds/project/rds-xyBFuSj0hm0/myl40/mphil_project
 CHECKPOINT=$MLMI8DIR/checkpoint/$MODEL
