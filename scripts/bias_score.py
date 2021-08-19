@@ -1,6 +1,6 @@
 """
-Input: file containing likelihoods in order of a,s,u
-Return log-likliehood ratio bias score
+Compute log-likliehood ratio stereotype bias score
+using a file containing likelihoods in order of a,s,u
 
 Sample usage:
 ```

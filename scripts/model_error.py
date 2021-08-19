@@ -1,10 +1,6 @@
 """
-Compute modelling error and save in format suitable for confusion matrix (true vs pred token).
-The target posteriors are logged when display_model calls torch_generator_agent.py at 
-/home/myl40/.pyenv/versions/3.8.2/lib/python3.8/site-packages/parlai/core/torch_generator_agent.py
-
-Log filename set in my helper script:
-/home/myl40/.pyenv/versions/3.8.2/lib/python3.8/site-packages/parlai/scripts/helper.py
+Compute modelling error for generating confusion matrices,
+using files containing target likelihoods given context and token.
 """
 import os
 from datetime import datetime
@@ -316,85 +312,6 @@ class ModelError:
         print('results saved to: ', counter_log)
 
 if __name__ == '__main__':
-    # checkpoint = '/rds/project/rds-xyBFuSj0hm0/myl40/mphil_project/checkpoint/Reddit_90M_FT_once_genderation_token'
-    # checkpoint = '/rds/project/rds-xyBFuSj0hm0/myl40/mphil_project/checkpoint/Reddit_90M_genderation'
-    ## StereoSet
-    # correct_filename = 'correct_06-23-14.log'
-    # incorrect_filename = 'incorrect_06-23-15.log'
-    ## convai2
-    # correct_filename = 'correct_06-23-23.log'
-    # incorrect_filename = 'incorrect_06-23-23.log'
-
-    ## convai2 (baseline)
-    # correct_filename = 'correct_06-25-23.log'
-    # incorrect_filename = 'incorrect_06-25-23.log'
-
-    ## Sanity check
-    # correct_filename = 'correct_06-25-23.log'
-    # incorrect_filename = 'f0m0_most_freq_06-27-23.log'   
-    # correct_filename = 'convai2_token_incorrect/correct_06-23-23.log'
-    # incorrect_filename = 'f0m0u_most_freq_06-27-23.log'   
-
-    # correct = os.path.join(checkpoint, 'target_posterior', correct_filename)
-    # incorrect = os.path.join(checkpoint, 'target_posterior', incorrect_filename)
-    # dest = os.path.join(checkpoint, 'target_posterior')
-
-    """
-    Method 1: confusion matrix for binary modelling error
-    """
-    """
-    Compute percentage of model error ('model_error') and save correct/incorrect classification in 'correction.csv'
-    python src/utils/model_error.py <correct file path> <incorrect file path>
-    """
-    # # checkpoint = '/rds/project/rds-xyBFuSj0hm0/myl40/mphil_project/checkpoint/Reddit_90M_genderation_LRx8'
-    # checkpoint = '/rds/project/rds-xyBFuSj0hm0/myl40/mphil_project/checkpoint/Reddit_90M_FT_once_genderation_token'
-    # dest = os.path.join(checkpoint, 'target_posterior/convai2_token_incorrect')
-    # dest = os.path.join(checkpoint, 'target_posterior/stereoset_token_incorrect')
-    # dest = os.path.join(checkpoint, 'target_posterior/convai2_fixed_f0m0u')
-    # correct = sys.argv[1]
-    # incorrect = sys.argv[2]
-    # ModelError(correct, incorrect, dest).compare()
-
-    """Copy correct and incorrect token in data to csv file 'true_false_tokens.csv' """
-    # path_correct = 'my_data/genderation_data/convai2/dev.json'
-    # path_incorrect = 'my_data/genderation_data_incorrect/convai2/dev.json'
-    # path_correct = 'my_data/stereoset_token/stereoset_dev_flattened_token.json'
-    # path_incorrect = 'my_data/stereoset_token_incorrect/stereoset_dev_flattened_token_incorrect.json'
-    # path_incorrect = '' # fixed f0m0u 
-    # m = ModelError('', '', dest)
-    # m.two_tokens(path_correct, path_incorrect, tok_len=4)
-    # m.true_pred(os.path.join(dest,'correction.csv'), os.path.join(dest,'true_false_tokens.csv'))
-
-    """
-    Method 2: confusion matrix for maximum likelihood modelling error
-    """
-
-    """Maximum likelihood prediction of token"""
-    # dirname = 'checkpoint/Reddit_90M_FT_once_genderation_token/confusion_stereoset'
-    # dirname = 'checkpoint/Reddit_90M_FT_once_genderation_token/confusion_convai2'
-    # sorted_files = sorted(os.listdir(dirname))
-    # ModelError('', '', '').max_likelihood(dirname, sorted_files)
-    
-    """Get correct tokens"""
-    # path_correct = 'my_data/stereoset_token/stereoset_dev_flattened_token.json'
-    # path_correct = 'my_data/genderation_data_token/convai2/dev.json'
-    # ModelError('', '', '').get_token(path_correct, tok_len=5, as_int=True)
-
-
-    """Modelling error% and "true,pred" counts for tokens as integers"""
-    # dest = 'checkpoint/Reddit_90M_FT_once_genderation_token/confusion'
-    # pred_indices = 'checkpoint/Reddit_90M_FT_once_genderation_token/confusion/pred_indices-261.csv'
-    # true_tokens = 'checkpoint/Reddit_90M_FT_once_genderation_token/confusion/true_tokens-stereoset.csv'
-
-    # dest = 'checkpoint/Reddit_90M_FT_once_genderation_token/confusion_convai2_out'
-    # pred_indices = 'checkpoint/Reddit_90M_FT_once_genderation_token/confusion_convai2_out/pred_indices-109.csv'
-    # true_tokens = 'checkpoint/Reddit_90M_FT_once_genderation_token/confusion_convai2_out/true_tokens.csv'
-    # ModelError('', '', '').true_pred_int(pred_indices, true_tokens, dest)
-
-    """
-    Method 3: random incorrect token
-    """
-
     """get correct token as int"""
     # path_correct = 'my_data/genderation_data_token/convai2/dev.json'
     # path_correct = 'my_data/stereoset_token/stereoset_dev_flattened_token.json'
