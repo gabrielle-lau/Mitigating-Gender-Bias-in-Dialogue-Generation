@@ -1,7 +1,7 @@
 # Mitigating Gender Bias in Dialogue Generation
-This is the source code for my thesis on "Mitigating Gender Bias in Dialogue Generation" for the degree of MPhil in Machine Learning and Machine Intelligence at University of Cambridge.
+This is the source code for my thesis on "Mitigating Gender Bias in Dialogue Generation" submitted for the MPhil in Machine Learning and Machine Intelligence at University of Cambridge.
 
-The [ParlAI](https://github.com/facebookresearch/ParlAI) framework is utilised and the modified ParlAI scripts are included in `src/`. The modified code blocks are marked with the comment `# Thesis`.
+The [ParlAI](https://github.com/facebookresearch/ParlAI) Python framework (version 1.2.0) is utilised throughout the thesis and the modified ParlAI scripts are included in `src/`. The modified code blocks are marked with the comment `# Thesis`. The other scripts primarily written using standard Python packages are incluced in `scripts/`.
 
 An overview of the project is presented below.
 
@@ -40,7 +40,7 @@ We evaluated GB(S)-Ctrl on ConvAI2 and StereoSet using the following metrics:
 * **% Delta stereotype bias score**: a smaller delta means a more equal percentage of positive and negative bias scores, thus the less biased the model is to either stereotype or anti-stereotype.  Delta equals 0 is the ideal result.  A positive delta means the model is more likely to produce a stereotyped response, and vice versa.
 * **Perplexity**: the exponentiated average negative log-likelihood of a tokenized sequence, a measure of dialogue fluency.
 
-### Results on genderedness 
+### Results on genderedness mitigation
 * This gender bias (& stereotype) controlled finetuning approach is effective in reducing genderedness (ie. Female (Male)%) and toxicity, without worsening perplexity.
 * In Figure 1, the “f0m0” genderless token is the best token for GB-Ctrl to conditionally generate less gendered model responses.  Genderedness decreases by more than half of that of Blender 90M. 
 * In Figure 2-3, GBS-Ctrl with “f0m0u” is about as effective  as  GB-Ctrl  with  “f0m0”  for  reducing  genderedness  on  ConvAI2  and StereoSet.
@@ -54,7 +54,7 @@ We evaluated GB(S)-Ctrl on ConvAI2 and StereoSet using the following metrics:
 #### Figure 3: Results of GBS-Ctrl evaluated on StereoSet validation set
 <img src="https://github.com/gabrielle-lau/Mitigating-Gender-Bias-in-Dialogue-Generation/blob/main/figures/images/GBS-Ctrl-stereoset-h.png" width="500">
 
-### Results on stereotype bias
+### Results on stereotype bias mitigation
 * In Figure 4, GBS-Ctrl appears to reduce gender stereotype bias slightly, because the %delta of -31% is 2% smaller in magnitude than that of GB-Ctrl.  GB-Ctrlhas  -33%  %delta,  meaning  there  are  more  anti-stereotype  biases  than  stereotype biases.
 * However, our gender bias & stereotype controlled finetuning approach has limitations in evaluating stereotype bias due to its reliance on StereoSet.
 
@@ -68,7 +68,7 @@ We evaluated GB(S)-Ctrl on ConvAI2 and StereoSet using the following metrics:
 * GB(S)-Ctrl  reduced  classification  error  significantly.   This  indicates  both  models are finetuned as intended and have learned correct associations between token and target responses.
 * GB-Ctrl model has one-third fewer errors than a 4-class random  classifier (48%  compared  to  75%),  and  the  GBS-Ctrl  almost  halved  the12-class random classifier’s error rate from 91% to 47%.
 * GB(S)-Ctrl roughly halved the f0m0(u)-always classi-fier’s error rate from 14% to 7%.
-* Figure 6(a) and 7(a) show a dark blue diagonal, which means there is a high true positive rate for token classification.
+* Figure 6(a), 7(a) and 8(a) show a dark blue diagonal, which means there is a high true positive rate for token classification.
 
 #### Figure 6: Normalised confusion matrices of GB-Ctrl token classification on ConvAI2
 (a) given  a  random  incorrect  token |  (b) given  a  fixed  f0m0  token
@@ -80,6 +80,45 @@ We evaluated GB(S)-Ctrl on ConvAI2 and StereoSet using the following metrics:
 :-------------------------:|:-------------------------:
 <img src="https://github.com/gabrielle-lau/Mitigating-Gender-Bias-in-Dialogue-Generation/blob/main/figures/images/GBS-Ctrl-random-convai2.png" width="300">  |  <img src="https://github.com/gabrielle-lau/Mitigating-Gender-Bias-in-Dialogue-Generation/blob/main/figures/images/GBS-Ctrl-f0m0u-convai2.png" width="300">
 
+#### Figure 7: Normalised confusion matrices of GBS-Ctrl token classification on StereoSet
+(a) given  a  random  incorrect  token |  (b) given  a  fixed  f0m0u  token
+:-------------------------:|:-------------------------:
+<img src="https://github.com/gabrielle-lau/Mitigating-Gender-Bias-in-Dialogue-Generation/blob/main/figures/images/GBS-Ctrl-random-stereoset.png" width="300">  |  <img src="https://github.com/gabrielle-lau/Mitigating-Gender-Bias-in-Dialogue-Generation/blob/main/figures/images/GBS-Ctrl-f0m0u-stereoset.png" width="300">
+
 ## Self-debiasing decoding
 ### Approach
+Introduced by Schick et al. (2021),  self-debiasing is defined as a language model using only its internal knowledge to adapt its generation process to reduce the probability of generating texts that exhibit undesired behaviours. The principle concept uses zero-shot learning with textual bias descriptions,  where the system identifies and avoids specific biases. 
 
+We extend Schick et al. (2021)'s approach to debias hostile sexism in GB-Ctrl, GBS-Ctrl and Blender 90M system by solving 3 key problems:
+1.  Debias hostile sexism instead of toxicity.
+2.  Blender is a dialogue model that cannot continue an incomplete sentence, but canonly reply to a complete sentence.
+3.  The evaluation method in the paper (Schick et al., 2021) relies on [Perspective API](https://www.perspectiveapi.com/) for detecting biases, so it cannot easily test the effectiveness of the self-debiasing decoding algorithm in debiasing gender bias that is not measured by PerspectiveAPI.
+
+We implemented the algorithm and designed novel dialogue templates to ask the system if a sexist tweet from a hostile sexism dataset (Waseem and Hovy, 2016; Jha and Mamidi, 2017) is acceptable, so  that  the  system’s  yes-no  answer  can  be  classified  as  “agree”,  “disagree”  or “neither agree nor disagree” to indicate if it contains hostile sexism. A response that says  yes  or  agrees  is  sexist,  since  it  is  a  harmful  affirmation  of  a  sexist  statement. In contrast, a system response that says no or disagrees is not sexist, since the response is a counter-speech to hate speech. 
+
+We finetuned a RoBERTa base model (Liu  et  al.,  2019) on the Situations With Adversarial Generations (SWAG) dataset to automatically evaluate system responses on hostile sexism. The accuracy on the sexist task is around 70% based on human judgement, which is more than double of a 3-class random classifier. We call this model "RoBERTa MC".
+
+### Evaluation metric of hostile sexism
+We measure the percentage of system responses classified by RoBERTa MC as "agree", "disagree" or "neither agree nor disagree", before and after applying self-debiasing decoding. 
+
+A reduction in hostile sexism is indicated by either:
+* A decrease in the percentage of "agree", or 
+* An increase in percentage of "disagree".
+
+### Results on hostile sexism mitigation
+* From Table 1 Rows 1-2, self-debiasing  decoding (with hyperparameter λ=50) effectively  reduced  hostile  sexism  in  GBS-Ctrl and GB-Ctrl responses by 13% and 20% respectively compared to no self-debiasing.
+* There is no negative effect on perplexity.
+
+#### Table 1: % Change in classification with self-debiasing (λ=50) compared to no debiasing 
+Row # | Model |  Agree | Disagree | Neither
+:----:|:------:|:------:|:------:|:------:
+1 | GB-Ctrl | -20.23% | +16.03% | +15.50%
+2 | GBS-Ctrl | -13.03% | +13.32% | +17.92%
+3 | Blender 90M | +2.91% | +6.87% | -6.53%
+
+## Conclusion and contributions
+The contributions made by this thesis are highlighted here:
+* Developed a bias controlled finetuning approach that extends the approach in literature to simultaneously reduce gendered words and stereotype bias in a state-of-the-art open-domain chatbot, by introducing novel bias control variables. 
+* Extended literature's self-debiasing decoding algorithm to debias hostile sexism in dialogue systems.
+* Introduced a novel, general  approach to evaluate hostile sexism in dialogue system responses using  RoBERTa for classifying harmful affirmation.
+* Combined these two finetuning and decoding approaches to mitigate multiple types of gender biases. 
