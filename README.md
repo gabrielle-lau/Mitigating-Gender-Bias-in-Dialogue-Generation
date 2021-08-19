@@ -1,7 +1,7 @@
 # Mitigating Gender Bias in Dialogue Generation
 This is the source code for my thesis on "Mitigating Gender Bias in Dialogue Generation" submitted for the MPhil in Machine Learning and Machine Intelligence at University of Cambridge.
 
-The [ParlAI](https://github.com/facebookresearch/ParlAI) Python framework (version 1.2.0) is utilised throughout the thesis and the modified ParlAI scripts are included in `src/`. The modified code blocks are marked with the comment `# Thesis`. The other scripts primarily written using standard Python packages are incluced in `scripts/`.
+The [ParlAI](https://github.com/facebookresearch/ParlAI) Python framework (version 1.2.0) is utilised throughout the thesis. The modified ParlAI scripts are included in `src/`, with the modified code blocks indicated with the comment `# Thesis`. The other scripts (primarily written using standard Python packages) are incluced in `scripts/`.
 
 An overview of the project is presented below.
 
@@ -96,20 +96,20 @@ We extend Schick et al. (2021)'s approach to debias hostile sexism in GB-Ctrl, G
 
 We implemented the algorithm and designed novel dialogue templates to ask the system if a sexist tweet from a hostile sexism dataset (Waseem and Hovy, 2016; Jha and Mamidi, 2017) is acceptable, so  that  the  system’s  yes-no  answer  can  be  classified  as  “agree”,  “disagree”  or “neither agree nor disagree” to indicate if it contains hostile sexism. A response that says  yes  or  agrees  is  sexist,  since  it  is  a  harmful  affirmation  of  a  sexist  statement. In contrast, a system response that says no or disagrees is not sexist, since the response is a counter-speech to hate speech. 
 
-We finetuned a RoBERTa base model (Liu  et  al.,  2019) on the Situations With Adversarial Generations (SWAG) dataset to automatically evaluate system responses on hostile sexism. The accuracy on the sexist task is around 70% based on human judgement, which is more than double of a 3-class random classifier. We call this model "RoBERTa MC".
+We finetuned a RoBERTa base model (Liu  et  al.,  2019) on the Situations With Adversarial Generations (SWAG) dataset (Zellers et al., 2018) to automatically evaluate system responses on hostile sexism. The accuracy on the sexist task is around 70% based on human judgement, which is more than double of a 3-class random classifier. We call this model "RoBERTa MC".
 
 ### Evaluation metric of hostile sexism
 We measure the percentage of system responses classified by RoBERTa MC as "agree", "disagree" or "neither agree nor disagree", before and after applying self-debiasing decoding. 
 
 A reduction in hostile sexism is indicated by either:
 * A decrease in the percentage of "agree", or 
-* An increase in percentage of "disagree".
+* An increase in the percentage of "disagree".
 
 ### Results on hostile sexism mitigation
 * From Table 1 Rows 1-2, self-debiasing  decoding (with hyperparameter λ=50) effectively  reduced  hostile  sexism  in  GBS-Ctrl and GB-Ctrl responses by 13% and 20% respectively compared to no self-debiasing.
 * There is no negative effect on perplexity.
 
-#### Table 1: % Change in classification with self-debiasing (λ=50) compared to no debiasing 
+#### Table 1: Percentage change in classification with self-debiasing (λ=50) compared to without self-debiasing 
 Row # | Model |  Agree | Disagree | Neither
 :----:|:------:|:------:|:------:|:------:
 1 | GB-Ctrl | -20.23% | +16.03% | +15.50%
