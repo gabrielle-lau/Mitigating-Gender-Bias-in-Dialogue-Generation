@@ -1,7 +1,7 @@
 # Mitigating Gender Bias in Dialogue Generation
 This is the source code for the thesis on "Mitigating Gender Bias in Dialogue Generation" submitted for the degree of _MPhil in Machine Learning and Machine Intelligence_ at University of Cambridge.
 
-The [ParlAI](https://github.com/facebookresearch/ParlAI) Python framework (version 1.2.0) is utilised throughout the thesis. The modified ParlAI scripts are included in `src/`, with the modified code blocks indicated with the comment `# Thesis`. The other scripts are incluced in `scripts/`, which are primarily written using standard Python packages.
+The [ParlAI](https://github.com/facebookresearch/ParlAI) Python framework (version 1.2.0) is utilised throughout the thesis. The modified ParlAI scripts are included in `src/`, with the modified code blocks indicated with the comment `# Thesis`. `scripts/` include other scripts that are written using standard Python packages unless otherwise specified.
 
 An overview of the project is presented below.
 
