@@ -1,5 +1,7 @@
 """
-Download and preprocess Reddit data
+Download Reddit pushshift data via API and preprocess data 
+according to Section 6.1 of a paper by Roller et al.:
+https://arxiv.org/pdf/2004.13637.pdf 
 """
 import zstandard 
 import json
