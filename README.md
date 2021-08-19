@@ -12,13 +12,13 @@ With the goal of reducing gender bias in open-domain chatbot models without comp
 * **Bias controlled finetuning** (Xu et al., 2020): performs continued training on a pre-trained model to learn to generate unbiased responses
 * **Self-debiasing decoding** (Schick et al., 2021): uses a language model’s internal knowledge to algorithmically reduce biased responses generated during testing time
 
-We apply the gender mitigation methods on a state-of-the-art open-domain dialogue model called [BlenderBot](https://ai.facebook.com/blog/state-of-the-art-open-source-chatbot/) (Roller et al., 2020), which is available on [ParlAI](https://github.com/facebookresearch/ParlAI). 
+We apply the gender mitigation methods on a state-of-the-art open-domain dialogue model called [BlenderBot](https://ai.facebook.com/blog/state-of-the-art-open-source-chatbot/) (Roller et al., 2020), which is available on [ParlAI](https://github.com/facebookresearch/ParlAI). Blender has a Seq2Seq transformer-based encoder-decoder architecture.
 
 ## Gender bias (& stereotype) controlled finetuning
 ### Approach
-In order to finetune a pre-trained Reddit 90M model to generate an equal number of responses containing male words and female words respectively, Xu et al. (2020) control the system’s responses with bias control tokens of the form "f<sup>0/1</sup>m<sup>0/1</sup>" through conditional training. We followed this gender bias controlled finetuning approach for our baseline, but used a smaller 90M-parameter model due to limited computing resources. 
+In order to finetune a pre-trained Reddit 90M model to generate an equal number of responses containing male words and female words respectively, Xu et al. (2020) control the system’s responses with bias control tokens of the through conditional training. We followed this gender bias controlled finetuning approach for our baseline, but used a smaller 90M-parameter model due to limited computing resources. 
 
-Before finetuning, each dialogue in the finetuning data is classified as 1 of 4 gender bias token classes depending on the presence of gendered words in the response:
+Before finetuning, each dialogue in the finetuning data (ConvAI2, Empathetic Dialogues, Wizard of Wikipedia, Blended Skill Talk) is classified as 1 of 4 gender bias token classes depending on the presence of gendered words in the response:
 1. **f0m0**:  no gender words.
 2. **f0m1**:  at least one male word.
 3. **f1m0**:  at least one female word.
@@ -26,16 +26,60 @@ Before finetuning, each dialogue in the finetuning data is classified as 1 of 4 
 
 The appropriate token is appended to the context of each dialogue in the finetuning data, then we finetuned the model (batch size 32, Adamax optimiser, learning rate 8e-6) on 1 NVidia Tesla P100-PCIE-16GB GPU on HPC until convergence. The resulting model is called “GB-Ctrl”.
 
-To extend Xu et al. (2020)'s approach, we  introduce  a  novel  set  of  tokens  as  control  variables  to  simultaneously  control  two types of gender bias – genderedness and stereotype. The tokens are of the form "f<sup>0/1</sup>m<sup>0/1</sup><sub>a/s/u</sub>", where a/s/u indicates if the response given the context is a(n):
-1. **f<sup>0/1</sup>m<sup>0/1</sup>a**: anti-stereotype response.
-2. **f<sup>0/1</sup>m<sup>0/1</sup>s**: stereotype response.
-3. **f<sup>0/1</sup>m<sup>0/1</sup>u**: unrelated response.
+To extend Xu et al. (2020)'s approach, we  introduce  a  novel  set  of  tokens  as  control  variables  to  simultaneously  control  two types of gender bias – genderedness and stereotype. The 12 tokens are of the form "f<sup>0/1</sup>m<sup>0/1</sup><sub>a/s/u</sub>", where a/s/u indicates if the response given the context is a(n) anti-stereotype, stereotype or unrelated response. 3 of 12 tokens are listed below:
+1. **f0m0a**: genderless and anti-stereotype.
+2. **f0m0s**: genderless and stereotype.
+3. **f0m0u**: genderless and unrelated.
 
-We finetune a Reddit 90M model on finetuning data of Xu et al. (2020) with an additional dataset called “StereoSet” (Nadeem et al., 2020), with new tokens appended to the context in the data. The resulting model is called “GBS-Ctrl”
+We finetuned a Reddit 90M model on the above-mentioned finetuning data and an additional dataset called “StereoSet” (Nadeem et al., 2020), with new tokens appended to the context in the data. The resulting model is called “GBS-Ctrl”
 
-### Results
+### Evaluation metrics
+We evaluated GB(S)-Ctrl on ConvAI2 and StereoSet using the following metrics:
+* **Total toxicity**: the percentage of model responses flagged as offensive by a string matcher or safety classifier.
+* **Female (Male)%**: the percentage of responses containing at least one female (male) word.
+* **% Delta stereotype bias score**: a smaller delta means a more equal percentage of positive and negative bias scores, thus the less biased the model is to either stereotype or anti-stereotype.  Delta equals 0 is the ideal result.  A positive delta means the model is more likely to produce a stereotyped response, and vice versa.
+* **Perplexity**: the exponentiated average negative log-likelihood of a tokenized sequence, a measure of dialogue fluency.
+
+### Results on genderedness 
+* This gender bias (& stereotype) controlled finetuning approach is effective in reducing genderedness (ie. Female (Male)%) and toxicity, without worsening perplexity.
+* In Figure 1, the “f0m0” genderless token is the best token for GB-Ctrl to conditionally generate less gendered model responses.  Genderedness decreases by more than half of that of Blender 90M. 
+* In Figure 2-3, GBS-Ctrl with “f0m0u” is about as effective  as  GB-Ctrl  with  “f0m0”  for  reducing  genderedness  on  ConvAI2  and StereoSet.
+
+#### Figure 1: Results of GB-Ctrl evaluated on ConvAI2 validation set
 <img src="https://github.com/gabrielle-lau/Mitigating-Gender-Bias-in-Dialogue-Generation/blob/main/figures/images/GB-Ctrl-convai2-h.png" width="500">
 
+#### Figure 2: Results of GBS-Ctrl evaluated on ConvAI2 validation set
 <img src="https://github.com/gabrielle-lau/Mitigating-Gender-Bias-in-Dialogue-Generation/blob/main/figures/images/GBS-Ctrl-convai2-h.png" width="500">
 
+#### Figure 3: Results of GBS-Ctrl evaluated on StereoSet validation set
 <img src="https://github.com/gabrielle-lau/Mitigating-Gender-Bias-in-Dialogue-Generation/blob/main/figures/images/GBS-Ctrl-stereoset-h.png" width="500">
+
+### Results on stereotype bias
+* In Figure 4, GBS-Ctrl appears to reduce gender stereotype bias slightly, because the %delta of -31% is 2% smaller in magnitude than that of GB-Ctrl.  GB-Ctrlhas  -33%  %delta,  meaning  there  are  more  anti-stereotype  biases  than  stereotype biases.
+* However, our gender bias & stereotype controlled finetuning approach has limitations in evaluating stereotype bias due to its reliance on StereoSet.
+
+#### Figure 4: %Delta between positive and negative gender stereotype bias scores on StereoSet
+<img src="https://github.com/gabrielle-lau/Mitigating-Gender-Bias-in-Dialogue-Generation/blob/main/figures/images/delta_gender_bias.png" width="500">
+
+#### Figure 5: %Delta between positive and negative stereotype bias scores on StereoSet
+<img src="https://github.com/gabrielle-lau/Mitigating-Gender-Bias-in-Dialogue-Generation/blob/main/figures/images/delta_bias.png" width="500">
+
+### Results on classification accuracy
+* GB(S)-Ctrl  reduced  classification  error  significantly.   This  indicates  both  models are finetuned as intended and have learned correct associations between token and target responses.
+* GB-Ctrl model has one-third fewer errors than a 4-class random  classifier (48%  compared  to  75%),  and  the  GBS-Ctrl  almost  halved  the12-class random classifier’s error rate from 91% to 47%.
+* GB(S)-Ctrl roughly halved the f0m0(u)-always classi-fier’s error rate from 14% to 7%.
+* Figure 6(a) and 7(a) show a dark blue diagonal, which means there is a high true positive rate for token classification.
+
+#### Figure 6: Normalised confusion matrices of GB-Ctrl token classification on ConvAI2
+(a) given  a  random  incorrect  token |  (b) given  a  fixed  f0m0  token
+:-------------------------:|:-------------------------:
+<img src="https://github.com/gabrielle-lau/Mitigating-Gender-Bias-in-Dialogue-Generation/blob/main/figures/images/GB-Ctrl-random-convai2.png" width="300">  |  <img src="https://github.com/gabrielle-lau/Mitigating-Gender-Bias-in-Dialogue-Generation/blob/main/figures/images/GB-Ctrl-f0m0-convai2.png" width="300">
+
+#### Figure 6: Normalised confusion matrices of GBS-Ctrl token classification on ConvAI2
+(a) given  a  random  incorrect  token |  (b) given  a  fixed  f0m0u  token
+:-------------------------:|:-------------------------:
+<img src="https://github.com/gabrielle-lau/Mitigating-Gender-Bias-in-Dialogue-Generation/blob/main/figures/images/GBS-Ctrl-random-convai2.png" width="300">  |  <img src="https://github.com/gabrielle-lau/Mitigating-Gender-Bias-in-Dialogue-Generation/blob/main/figures/images/GBS-Ctrl-f0m0u-convai2.png" width="300">
+
+## Self-debiasing decoding
+### Approach
+
