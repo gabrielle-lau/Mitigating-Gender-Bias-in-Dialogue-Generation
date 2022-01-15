@@ -6,7 +6,7 @@ The [ParlAI](https://github.com/facebookresearch/ParlAI) Python framework (versi
 An overview of the project is presented below.
 
 ## Introduction
-Previous studies have found that these systems reflect or even amplify dataset biases. This thesis investigates how to mitigate gender bias in open-domain chatbots.  “Bias” is defined as “behaviour which systematically and unfairly discriminates against certain individuals or groups of individuals in favour of others” (Friedman and Nissenbaum, 1996). 
+Previous studies have found that existing powerful dialogue systems reflect or even amplify dataset biases. This thesis investigates how to mitigate gender bias in open-domain chatbots.  “Bias” is defined as “behaviour which systematically and unfairly discriminates against certain individuals or groups of individuals in favour of others” (Friedman and Nissenbaum, 1996). 
 
 With the goal of reducing gender bias in open-domain chatbot models without compromising system response quality, this thesis explores two debiasing methods that do not require retraining a system from scratch:
 * **Bias controlled finetuning** (Xu et al., 2020): performs continued training on a pre-trained model to learn to generate unbiased responses
